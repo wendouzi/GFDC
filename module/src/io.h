@@ -2,13 +2,12 @@
 #define IO_H
 
 #include <string>
-
+#include "Image.h"
 namespace wendouzi
 {
-class Image;
 class IO{
 public:
-    static bool RasterRead(const std::string& file, const Image_u16 * img);
+    static bool RasterRead(const std::string& file, Image_u16 * img);
 };
 
 }

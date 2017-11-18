@@ -1,10 +1,10 @@
 #include "io.h"
-#include "image.h"
+#include "Image.h"
 #include "NXLog.h"
 
 namespace wendouzi{
 
-bool IO::RasterRead(const std::string& filename, const Image_u16 * img)
+bool IO::RasterRead(const std::string& filename, Image_u16 * img)
 {
     GDALAllRegister();
     GDALDataset * pDataset = NULL;
@@ -15,14 +15,14 @@ bool IO::RasterRead(const std::string& filename, const Image_u16 * img)
             return false;
     }
     int nRasterCount = GDALGetRasterCount(pDataset);
-    width = GDALGetRasterXSize(pDataset);
-    height = GDALGetRasterYSize(pDataset);
-    image->init(width, height, nRasterCount);
+    int width = GDALGetRasterXSize(pDataset);
+    int height = GDALGetRasterYSize(pDataset);
+    img->init(width, height, nRasterCount);
     NXLog("%s, nRasterCount:%d,width:%d,height:%d\n",__PRETTY_FUNCTION__, nRasterCount,width,height);
 
     for (int idx = 1; idx <= nRasterCount; ++idx){
         GDALRasterBand * pBand = pDataset->GetRasterBand(idx);
-        pBand->RasterIO(GF_Read,0,0, width,height,getBandPtr(idx),
+        pBand->RasterIO(GF_Read,0,0, width,height,img->getBandPtr(idx-1),
             width,height,GDT_UInt16,0,0);
     }
     GDALClose(pDataset);

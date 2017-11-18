@@ -1,5 +1,5 @@
 #include <iostream>
 
 #ifndef NXLog
-#define NXLog(...) printf(##__VA_ARGS__)
+#define NXLog(...) printf(__VA_ARGS__);
 #endif

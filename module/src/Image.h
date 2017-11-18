@@ -5,17 +5,20 @@
 #include "gdal_priv.h"
 #include "gdal_alg.h"
 #include "cpl_conv.h"
+#include <stdint.h>
+#include "NXLog.h"
+#include <assert.h>
 
 namespace wendouzi{
 
 class Algo;
 template<typename T>
-class Image {
+class _Image {
     typedef T* Band;
     typedef T  BandType;
     friend class Algo;
 public:
-    Image(int w = 0, int h = 0, int b = 0): width(w), height(h), bandsNum(b){
+    _Image(int w = 0, int h = 0, int b = 0): width(w), height(h), bandNum(b){
         NXLog("%s\n", __PRETTY_FUNCTION__);
         assert(bandNum == bands.size());
         for (int idx = 0; idx < bandNum; idx++) {
@@ -43,17 +46,17 @@ public:
         height = h;
         bandNum = b;
         for (int idx = 0; idx < bandNum; idx++) {
-            Band b = (Band) CPLMalloc(sizeof(BandType)* width * height);
+            Band b = (Band) CPLMalloc(sizeof(BandType) * width * height);
             if (b == NULL){
                 assert(false);
             }
-            memset(bands[idx], 0, height * width);            
+            memset(b, 0, sizeof(BandType)* height * width);            
             bands.push_back(b);
         }
     }
 
     T* getBandPtr(const int idx) {
-        if (idx >= bandsNum) {
+        if (idx >= bandNum) {
             return NULL;
         }
         return bands[idx];
@@ -61,8 +64,9 @@ public:
 
     void clear()
     {
-        NXLog("%s", __PRETTY_FUNCTION__);
-        for (int idx = 0; idx < bandNuml; ++idx) {
+        NXLog("%s\n", __PRETTY_FUNCTION__);
+        assert(bandNum == bands.size());        
+        for (int idx = 0; idx < bandNum; ++idx) {
             if (bands[idx] != NULL) {
                 CPLFree(bands[idx]);
                 bands[idx] = NULL;
@@ -71,23 +75,26 @@ public:
         bands.clear();
     }
 
-    ~Image(){ 
+    ~_Image(){ 
         NXLog("%s", __PRETTY_FUNCTION__);
         assert(bandNum == bands.size());
         clear();
+    }
+    T* operator [](const int idx) {
+        return getBandPtr(idx);
     }
 protected:
 
     std::vector<Band> bands;
     int width;
     int height;
-    int bandsNum;
+    int bandNum;
 
 };
 
-typedef Image<float> Image_f;
-typedef Image<uint16_t> Image_u16;
-typedef Image<int> Image_int;
+typedef _Image<float> Image_f;
+typedef _Image<uint16_t> Image_u16;
+typedef _Image<int> Image_int;
 
 }
 

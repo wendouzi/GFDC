@@ -1,7 +1,7 @@
 #ifndef ALGO_H
 #define ALGO_H
 
-#include "image.h"
+#include "Image.h"
 
 namespace wendouzi {
 class Algo {
