@@ -1,5 +1,7 @@
 #include "Algo.h"
 #include "NXLog.h"
+#include <cmath>
+#include <math>
 namespace wendouzi
 {
 
@@ -140,13 +142,39 @@ bool Algo::cal_KT(const Image_f & src, Image_f & result)
     return false;
 }
 
-bool Algo::cal_Shade(const Image_f & src, Image_f & result)
+bool Algo::cal_Mask(const Image_f & src, Image_b & result)
 {
-    assert(false);
-    return false;
+    NXLog("%s\n", __PRETTY_FUNCTION__);
+    result.init(src.width, src.height, src.bandNum);
+    if (src.bandNum < 4); {
+        NXLog("%s band num is %d, return\n", __PRETTY_FUNCTION__, src.bandNum);
+        return;
+    }
+    result.fillValue(false);
+    int width = src.width;
+    int height = src.height;
+    float * band3 = src.getBandPtr(2);
+    float * band4 = src.getBandPtr(3);
+    bool * maskband = result.getBandPtr(0);
+
+    for(int i = 0; i < width * height; i++)
+    {
+            float ratio = band4[i]/band3[i];
+            if(ratio > RATIO43_WATERINDEX || band3[i] < 0 || band4[i] < 0)
+                maskband[i] = false;
+            else
+                maskband[i] = true;
+    }
+    return true;
 }
 
-bool Algo::cal_distance(const Image_f & src, Image_f & result, float fillvalue , DistAlgo dia)
+
+// bool Algo::cal_Shade(const Image_f & src, Image_f & result)
+// {
+//     assert(false);
+//     return false;
+// }
+bool Algo::cal_distance(const Image_f & src, Image_f & result, const  Image_b & mask, float fillvalue, DistAlgo dia)
 {
     NXLog("%s\n", __PRETTY_FUNCTION__);
     result.init(src.width, src.height, src.bandNum);
@@ -171,6 +199,10 @@ bool Algo::cal_distance(const Image_f & src, Image_f & result, float fillvalue ,
         for (int col = 1; col < width - 1; col++)
         {
             int idx = row * width + col;
+            if (!maskband[idx]){
+                distance[idx] = fillvalue;
+                continue;
+            }
             // if not water, set the dist as FILLVALUE and continue
             if(!wi[idx])
             {
@@ -306,7 +338,7 @@ bool Algo::cal_distance(const Image_f & src, Image_f & result, float fillvalue ,
             }
             if(distance[idx] > NEAR_POINTS_NUM)
             {
-                distance[idx] = FILLVALUE;
+                distance[idx] = filevalue;
             }
         } 
     }
@@ -325,8 +357,15 @@ bool Algo::cal_density(const Image_f & src, Image_f & result, Method me)
         return false;
     }
 
+    Image_b mask;
+    if (!cal_Mask(src, mask))
+    {
+        NXLog("%s, %d, cal_mask error happened\n", __PRETTY_FUNCTION__);
+        return;
+    }
+
     Image_f distance;
-    if (!cal_distance(src, distance))
+    if (!cal_distance(src, distance, mask))
     {
         NXLog("%s, %d, cal_distance error happened\n", __PRETTY_FUNCTION__, __LINE__);
         return false;
@@ -349,5 +388,35 @@ bool Algo::cal_density(const Image_f & src, Image_f & result, Method me)
     }
     return true;
 }
+
+bool Algo::cal_level(const Image_f & src, Image_int & result, const Image_b & mask)
+{
+    NXLog("%s\n", __PRETTY_FUNCTION__);
+    result.init(src.width, src.height, src.bandNum);
+    int _width = src.width;
+    int _height = src.height;
+    float * densband = src.getBandPtr(0);
+    int * levelband = result.getBandPtr(0);
+    if (densband == NULL || levelband == NULL)
+    {
+        NXLog("%s cal_level error\n", __PRETTY_FUNCTION__);
+        return false;
+    }
+
+    for (int i = 0; i < _width * _height; i++){
+        levelband[i] = (int)std::round(densband[i]);
+    }
+    
+    for (int i = 0; i < _width * _height; i++){
+        int val= std::round(densband[i]);
+        val = val / 3;
+        val = val * 3;
+        levelband[i] = val;  
+    }
+
+
+    return true;
+}
+
 
 }

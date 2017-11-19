@@ -8,7 +8,7 @@ namespace wendouzi
 class IO{
 public:
     static bool RasterRead(const std::string& file, Image_u16 * img);
-    static bool RasterWrite(const Image_f & src, const std::string & dir);
+    static bool RasterWrite(const Image_f & src, const std::string & dir, const std::string & file);
 };
 
 }

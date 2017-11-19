@@ -73,7 +73,6 @@ public:
         return bands[idx];
     }
 
-
     void clear()
     {
         NXLog("%s\n", __PRETTY_FUNCTION__);

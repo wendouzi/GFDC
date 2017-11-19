@@ -1,7 +1,7 @@
 #include "io.h"
 #include "Image.h"
 #include "NXLog.h"
-
+#include <typeinfo> 
 namespace wendouzi{
 
 bool IO::RasterRead(const std::string& filename, Image_u16 * img)
@@ -30,42 +30,36 @@ bool IO::RasterRead(const std::string& filename, Image_u16 * img)
     return true;
 }
 
-bool IO::RasterWrite(const Image_f & src, const std::string & dir)
+bool IO::RasterWrite(const Image_f & src, const std::string & dir, const std::string & file)
 {
-    if (dir.empty()){
-        NXLog("%s, dir is empty\n", dir.c_str());        
+    boost::filesystem::path spath(dir);
+    spath /= file;
+    if (boost::filesystem::exists(spath){
+        NXLog("%s, file is exists\n", __PRETTY_FUNCTION__); 
+        return;       
     }
-   std::string tempsfile = this->savedir + DIR_SEPERATOR + sfile;
-   printf("Save full path: %s", tempsfile.c_str());
-    // save the ndvi variable
-    if ( var == var_ndvi )
+    NXLog("Save full path: %s", spath.string().c_str());
+
+    GDALDriver * poDriver;
+    char ** papszMetadata;
+    poDriver = GetGDALDriverManager()->GetDriverByName("GTiff");
+    if( poDriver == NULL )
     {
-        assert(ndvi != NULL);
-        GDALDriver * poDriver;
-        char ** papszMetadata;
-        poDriver = GetGDALDriverManager()->GetDriverByName("GTiff");
-        if( poDriver == NULL )
-        {
-            printf("GTiff is not supported.\n");
-            return;
-        }
-        char **papszOptions = NULL;
-        printf("write width:%d, height:%d",width, height);
-        GDALDataset *WriteDataSet = poDriver->Create(tempsfile.c_str(), width,height,1,GDT_Float32,papszOptions);
-        int poBandMap[1] ={1};
-        if(WriteDataSet->RasterIO(GF_Write,0,0,width,height,ndvi,width,height,GDT_Float32,1,poBandMap,0,0,0) != CE_None)
-        {
-            printf("write ndvi failed.\n");
-            return;
-        //      break;
-        }
-        // delete WriteDataSet;
-
-        printf("write ndvi done\n");
-        GDALClose(WriteDataSet);
-   //     GDALDestroyDriverManager();
-
+        NXLog("GTiff is not supported.\n");
+        return;
     }
+    char **papszOptions = NULL;
+    NXLog("write width:%d, height:%d",src.width, src.height);
+    GDALDataset *WriteDataSet = poDriver->Create(spath.string().c_str(), src.width,  src.height,1,GDT_Float32, papszOptions);
+    int poBandMap[1] ={1};
+    if(WriteDataSet->RasterIO(GF_Write,0,0,src.width,src.height,src.getBandPtr(0),src.width,src.height,GDT_Float32,1,poBandMap,0,0,0) != CE_None)
+    {
+        NXLog("write % failed.\n", spath.string().c_str());
+        return;
+    }
+
+    NXLog("write ndvi done\n");
+    GDALClose(WriteDataSet);
 
 }
 
