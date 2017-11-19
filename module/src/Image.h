@@ -10,7 +10,6 @@
 #include <assert.h>
 
 namespace wendouzi{
-
 class Algo;
 template<typename T>
 class _Image {
@@ -55,12 +54,25 @@ public:
         }
     }
 
-    T* getBandPtr(const int idx) {
+    void fillValue(BandType val)
+    {
+        for (int idx = 0; idx < bandNum; ++idx) {
+            Band b = getBandPtr(idx);
+            if (!b) {
+                NXLog("%s fillValue error\n", __PRETTY_FUNCTION__);
+                return;
+            }
+            memset(b, val, sizeof(BandType)* height * width);
+        }
+    }
+
+    T* getBandPtr(const int idx) const {
         if (idx >= bandNum) {
             return NULL;
         }
         return bands[idx];
     }
+
 
     void clear()
     {
@@ -76,13 +88,14 @@ public:
     }
 
     ~_Image(){ 
-        NXLog("%s", __PRETTY_FUNCTION__);
+        NXLog("%s\n", __PRETTY_FUNCTION__);
         assert(bandNum == bands.size());
         clear();
     }
-    T* operator [](const int idx) {
-        return getBandPtr(idx);
-    }
+
+    // T* operator [](const int idx) {
+    //     return getBandPtr(idx);
+    // }
 protected:
 
     std::vector<Band> bands;
@@ -95,6 +108,7 @@ protected:
 typedef _Image<float> Image_f;
 typedef _Image<uint16_t> Image_u16;
 typedef _Image<int> Image_int;
+typedef _Image<bool> Image_b;
 
 }
 

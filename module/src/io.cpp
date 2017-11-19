@@ -30,5 +30,9 @@ bool IO::RasterRead(const std::string& filename, Image_u16 * img)
     return true;
 }
 
+bool IO::RasterWrite(const Image_f & src, const std::string & dir)
+{
+
+}
 
 }
