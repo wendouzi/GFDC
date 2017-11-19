@@ -32,6 +32,40 @@ bool IO::RasterRead(const std::string& filename, Image_u16 * img)
 
 bool IO::RasterWrite(const Image_f & src, const std::string & dir)
 {
+    if (dir.empty()){
+        NXLog("%s, dir is empty\n", dir.c_str());        
+    }
+   std::string tempsfile = this->savedir + DIR_SEPERATOR + sfile;
+   printf("Save full path: %s", tempsfile.c_str());
+    // save the ndvi variable
+    if ( var == var_ndvi )
+    {
+        assert(ndvi != NULL);
+        GDALDriver * poDriver;
+        char ** papszMetadata;
+        poDriver = GetGDALDriverManager()->GetDriverByName("GTiff");
+        if( poDriver == NULL )
+        {
+            printf("GTiff is not supported.\n");
+            return;
+        }
+        char **papszOptions = NULL;
+        printf("write width:%d, height:%d",width, height);
+        GDALDataset *WriteDataSet = poDriver->Create(tempsfile.c_str(), width,height,1,GDT_Float32,papszOptions);
+        int poBandMap[1] ={1};
+        if(WriteDataSet->RasterIO(GF_Write,0,0,width,height,ndvi,width,height,GDT_Float32,1,poBandMap,0,0,0) != CE_None)
+        {
+            printf("write ndvi failed.\n");
+            return;
+        //      break;
+        }
+        // delete WriteDataSet;
+
+        printf("write ndvi done\n");
+        GDALClose(WriteDataSet);
+   //     GDALDestroyDriverManager();
+
+    }
 
 }
 
