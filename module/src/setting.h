@@ -64,7 +64,7 @@ public:
 
     std::string srcfile;
     std::string destdir;
-
+    std::string shpfile;
     __setting(){
         NXLog("%s\n", __PRETTY_FUNCTION__);
         // for_each(range.begin(), range.end(), [](float & r){ r = 0;});
@@ -73,6 +73,7 @@ public:
         m_products.assign(int(productTotalNum), false);
         srcfile = "";
         destdir = "";
+        shpfile = "";
     }
 
     void config(int argc, char* argv[]){
@@ -138,6 +139,7 @@ public:
                     if (!boost::filesystem::is_directory(temp)){
                         Usage("input destdir(dest directory ) is not directory.\n");
                     }
+                    destdir = temp;
                 }
                 continue;
             }
@@ -197,6 +199,8 @@ public:
         if (srcfile.compare("") == 0){
             Usage("please check input source file\n");
         }
+        NXLog("%s, save dir:%s\n", __PRETTY_FUNCTION__, destdir.c_str());
+
     }
 
     void clear() {
@@ -206,7 +210,7 @@ public:
         m_products.assign(int(productTotalNum), false);
         srcfile = "";
         destdir = "";
-        
+        shpfile = "";
     }
     virtual ~__setting(){
        NXLog("%s\n", __PRETTY_FUNCTION__);

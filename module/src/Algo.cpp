@@ -1,7 +1,7 @@
 #include "Algo.h"
 #include "NXLog.h"
 #include <cmath>
-#include <math>
+#include <math.h>
 namespace wendouzi
 {
 
@@ -16,6 +16,7 @@ bool Algo::correct_radio(const Image_u16 & src, Image_f & result, std::vector<fl
     }
 
     result.init(src.width, src.height, src.bandNum);
+    result.setGeoTransform(src.getGeoTransform());
     for(int idx = 0; idx < src.bandNum; ++idx){
         float _scale = d_scale[idx];
         float _offset = d_offset[idx];
@@ -41,6 +42,8 @@ bool Algo::radio_to_reflectance(const Image_f & src, Image_f & result, std::vect
         return false;
     }
     result.init(src.width, src.height, src.bandNum);
+    result.setGeoTransform(src.getGeoTransform());
+    
     for(int idx = 0; idx < src.bandNum; ++idx) {
         float _E0 = E0[idx];
         int _width = src.width;
@@ -59,6 +62,8 @@ bool Algo::cal_NDVI(const Image_f & src, Image_f & result)
 {
     NXLog("%s\n", __PRETTY_FUNCTION__);
     result.init(src.width, src.height, src.bandNum);
+    result.setGeoTransform(src.getGeoTransform());
+    
     int _width = src.width;
     int _height = src.height;
     float * band4 = src.getBandPtr(3);
@@ -88,6 +93,8 @@ bool Algo::cal_SVI(const Image_f & src, Image_f & result)
 {
     NXLog("%s\n", __PRETTY_FUNCTION__);
     result.init(src.width, src.height, src.bandNum);
+    result.setGeoTransform(src.getGeoTransform());
+    
     Image_f ndvi;
     cal_NDVI(src, ndvi);
     int _width = src.width;
@@ -114,6 +121,8 @@ bool Algo::cal_WI(const Image_f & src, Image_b & result, float threshold)
 {
     NXLog("%s\n", __PRETTY_FUNCTION__);
     result.init(src.width, src.height, src.bandNum);
+    result.setGeoTransform(src.getGeoTransform());
+    
     Image_f ndvi;
     cal_NDVI(src, ndvi);
     int _width = src.width;
@@ -138,24 +147,54 @@ bool Algo::cal_WI(const Image_f & src, Image_b & result, float threshold)
 
 bool Algo::cal_KT(const Image_f & src, Image_f & result)
 {
-    assert(false);
-    return false;
+    NXLog("%s\n", __PRETTY_FUNCTION__);
+    result.init(src.width, src.height, 3);
+    int _width = src.width;
+    int _height = src.height;
+    float * band1 = src.getBandPtr(0);
+    float * band2 = src.getBandPtr(1);
+    float * band3 = src.getBandPtr(2);
+    float * band4 = src.getBandPtr(3);
+    float * brightband = result.getBandPtr(0);
+    float * greenband = result.getBandPtr(1);
+    float * wetband = result.getBandPtr(2);
+
+    if (brightband == NULL || greenband == NULL || wetband == NULL) {
+        NXLog("%s cal_KT error\n", __PRETTY_FUNCTION__);
+        return false;
+    }
+
+    for(int i = 0; i < _width * _height; i++)
+    {
+        brightband[i] = band1[i] * 0.326 + band2[i] * 0.509 + band3[i] * 0.560 + band4[i] * 0.567;
+        greenband[i] = band1[i] * (-0.311) + band2[i] * (-0.356) + band3[i] * (-0.325) + band4[i] * 0.819;
+        wetband[i] = band1[i] * (-0.612) + band2[i] * (-0.312) + band3[i] * 0.722 + band4[i] * (-0.081);
+    }
+    return true;
 }
 
 bool Algo::cal_Mask(const Image_f & src, Image_b & result)
 {
     NXLog("%s\n", __PRETTY_FUNCTION__);
-    result.init(src.width, src.height, src.bandNum);
-    if (src.bandNum < 4); {
+
+    if (src.bandNum < 4) {
         NXLog("%s band num is %d, return\n", __PRETTY_FUNCTION__, src.bandNum);
-        return;
+        return false;
     }
+    result.init(src.width, src.height, src.bandNum);
+    result.setGeoTransform(src.getGeoTransform());
+
     result.fillValue(false);
     int width = src.width;
     int height = src.height;
     float * band3 = src.getBandPtr(2);
     float * band4 = src.getBandPtr(3);
     bool * maskband = result.getBandPtr(0);
+
+    if (band3 == NULL || band4 == NULL || maskband == NULL) {
+        NXLog("%s cal_Mask error\n", __PRETTY_FUNCTION__);
+        return false;
+    }
 
     for(int i = 0; i < width * height; i++)
     {
@@ -174,10 +213,12 @@ bool Algo::cal_Mask(const Image_f & src, Image_b & result)
 //     assert(false);
 //     return false;
 // }
-bool Algo::cal_distance(const Image_f & src, Image_f & result, const  Image_b & mask, float fillvalue, DistAlgo dia)
+bool Algo::cal_distance(const Image_f & src, Image_f & result, const  Image_b & mask, bool isAddMask, float fillvalue, DistAlgo dia)
 {
     NXLog("%s\n", __PRETTY_FUNCTION__);
     result.init(src.width, src.height, src.bandNum);
+    result.setGeoTransform(src.getGeoTransform());
+    
     Image_b wiImage;
     if (!cal_WI(src, wiImage)) {
         NXLog("%s cal_distance error\n", __PRETTY_FUNCTION__);
@@ -189,6 +230,7 @@ bool Algo::cal_distance(const Image_f & src, Image_f & result, const  Image_b & 
     int height = src.height;
     bool * wi = wiImage.getBandPtr(0);
     float * distance = result.getBandPtr(0);
+    bool * maskband = mask.getBandPtr(0);
     if (wi == NULL || distance == NULL) {
         NXLog("%s cal_distance error\n", __PRETTY_FUNCTION__);
         return false;
@@ -328,20 +370,41 @@ bool Algo::cal_distance(const Image_f & src, Image_f & result, const  Image_b & 
     NXLog("%s, GFimg::getDistance2water():distance calculate  success.\n", __PRETTY_FUNCTION__);
 
     // set the far pixel as the FILLVALUE the keep the influence range is circle
-    for ( int row = 0; row < height; row++)
-    {
-        for ( int col = 0; col < width; col++)
+    if (isAddMask) {
+        for ( int row = 0; row < height; row++)
         {
-            int idx = row * width + col;
-            if(wi[idx]) {
-                distance[idx] = WATERVALUE;
-            }
-            if(distance[idx] > NEAR_POINTS_NUM)
+            for ( int col = 0; col < width; col++)
             {
-                distance[idx] = filevalue;
-            }
-        } 
+                int idx = row * width + col;
+                if(wi[idx]) {
+                    distance[idx] = WATERVALUE;
+                    maskband[idx] = false;
+                }
+                if(distance[idx] > NEAR_POINTS_NUM)
+                {
+                    distance[idx] = fillvalue;
+                    maskband[idx] = false;
+                }
+            } 
+        }
     }
+    else {
+        for ( int row = 0; row < height; row++)
+        {
+            for ( int col = 0; col < width; col++)
+            {
+                int idx = row * width + col;
+                if(wi[idx]) {
+                    distance[idx] = WATERVALUE;
+                }
+                if(distance[idx] > NEAR_POINTS_NUM)
+                {
+                    distance[idx] = fillvalue;
+                }
+            } 
+        }
+    }
+
     
     return true;
     
@@ -360,8 +423,8 @@ bool Algo::cal_density(const Image_f & src, Image_f & result, Method me)
     Image_b mask;
     if (!cal_Mask(src, mask))
     {
-        NXLog("%s, %d, cal_mask error happened\n", __PRETTY_FUNCTION__);
-        return;
+        NXLog("%s, cal_mask error happened\n", __PRETTY_FUNCTION__);
+        return false;
     }
 
     Image_f distance;
@@ -371,9 +434,16 @@ bool Algo::cal_density(const Image_f & src, Image_f & result, Method me)
         return false;
     }
 
+    return cal_density(src, result, mask, distance, svi);
+}
+
+
+bool Algo::cal_density(const Image_f & src, Image_f & result, const Image_b & mask, const Image_f & distance, const Image_f & svi)
+{
+    NXLog("%s\n", __PRETTY_FUNCTION__);
+    
     result.init(src.width, src.height, src.bandNum);
-    int _width = src.width;
-    int _height = src.height;
+    result.setGeoTransform(src.getGeoTransform());
     float * sviband = svi.getBandPtr(0);
     float * distband = distance.getBandPtr(0);
     float * densband = result.getBandPtr(0);
@@ -381,18 +451,72 @@ bool Algo::cal_density(const Image_f & src, Image_f & result, Method me)
         NXLog("%s cal_density error\n", __PRETTY_FUNCTION__);
         return false;
     }
-
+    int _width = src.width;
+    int _height = src.height;
     for ( int i = 0; i < _width * _height ; i++)
     {
-        densband[i] = 100*sviband[i] - distband[i]/ 200;
+        float temp =  100*sviband[i] - distband[i]/ 200;
+        if (temp < -2) {
+            temp = -2;
+        }
+        else if (temp > 8) 
+        {
+            temp = 8;
+        }
+        densband[i] = temp;
+    }
+
+}
+
+bool Algo::cal_density(const Image_f & src, Image_f & result, const Image_b & mask, const Image_f & distance, const Image_f & ndvi, const Image_f & kt,
+    float fillvalue, float minvalue , float maxvalue) {
+    NXLog("%s\n", __PRETTY_FUNCTION__);
+    result.init(src.width, src.height, src.bandNum);
+    result.setGeoTransform(src.getGeoTransform());
+    float * ndviband = ndvi.getBandPtr(0);
+    float * nirband = src.getBandPtr(3);
+    float * distband = distance.getBandPtr(0);
+    float * brightband = kt.getBandPtr(0);
+    float * densband = result.getBandPtr(0);
+    bool * maskband = mask.getBandPtr(0);
+    if (ndviband == NULL || nirband == NULL || distband == NULL || brightband == NULL) {
+        NXLog("%s cal_density error\n", __PRETTY_FUNCTION__);
+        return false;
+    }
+    int _width = src.width;
+    int _height = src.height;
+    for ( int i = 0; i < _width * _height ; i++)
+    {
+        // densband[i] =  100*sviband[i] - distband[i]/ 200;
+        densband[i] = -7.278 - 14.995 * ndviband[i] * nirband[i] - 0.0015453 * distband[i] - 45.011 * brightband[i];
+    }
+    
+    for ( int i = 0; i < _width * _height ; i++)
+    {
+        if (!maskband[i] )
+        {
+            densband[i] = fillvalue;
+            continue;
+        }
+        if (densband[i] < minvalue) {
+            densband[i] = minvalue;
+            continue;
+        }
+        if (densband[i] > maxvalue) {
+            densband[i] = maxvalue;
+            continue;
+        }
     }
     return true;
 }
 
-bool Algo::cal_level(const Image_f & src, Image_int & result, const Image_b & mask)
+
+bool Algo::cal_level(const Image_f & src, Image_int & result, const Image_b & mask, int levelNum , float minvalue , float maxvalue, int fillvalue)
 {
     NXLog("%s\n", __PRETTY_FUNCTION__);
     result.init(src.width, src.height, src.bandNum);
+    result.setGeoTransform(src.getGeoTransform());
+    
     int _width = src.width;
     int _height = src.height;
     float * densband = src.getBandPtr(0);
@@ -407,16 +531,56 @@ bool Algo::cal_level(const Image_f & src, Image_int & result, const Image_b & ma
         levelband[i] = (int)std::round(densband[i]);
     }
     
+    int interval = 1;
+    int minvalue_int = std::round(minvalue);
+    int maxvalue_int = std::round(maxvalue);
+    interval = (maxvalue_int - minvalue_int) / levelNum;
+    NXLog("\n interval:%d, minvalue_int:%d, maxvalue_int :%d, levelNum:%d \n", interval, minvalue_int, maxvalue_int, levelNum);
     for (int i = 0; i < _width * _height; i++){
         int val= std::round(densband[i]);
-        val = val / 3;
-        val = val * 3;
+        if (val < minvalue_int) {
+            val = minvalue_int;
+        }else if (val > maxvalue_int) {
+            val = maxvalue_int;
+        }
+        val = val / interval;
+        // val = val * interval;
         levelband[i] = val;  
     }
 
+    bool *  maskband = mask.getBandPtr(0);
+    if (mask.width != _width || mask.height != _height || maskband == NULL) {
+        NXLog("%s cal_level mask invalidata\n", __PRETTY_FUNCTION__);
+    }
+    else {
+        for (int i = 0; i < _width * _height; i++){
+            if (!maskband[i]) {
+                levelband[i] = fillvalue;  
+            }
+        }
+    }
 
     return true;
 }
 
+bool Algo::area_count(const Image_int & level, AreaCount & count, const Image_b & mask)
+{
+    NXLog("%s\n", __PRETTY_FUNCTION__);
+
+    int _width = level.width;
+    int _height = level.height;
+    if (_width == 0 || _height == 0) {
+        NXLog("%s area_count error\n", __PRETTY_FUNCTION__);
+        return false;
+    }
+    bool * maskband = mask.getBandPtr(0);
+    int * levelband = level.getBandPtr(0);
+    for (int i = 0; i < _width * _height; i++){
+        if (maskband[i]) {
+            ++count.result[levelband[i]];
+        }
+    }
+    return true;
+}
 
 }

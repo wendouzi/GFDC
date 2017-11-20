@@ -6,7 +6,7 @@
 #include <assert.h>
 #include "setting.h"
 #include "config.h"
-
+#include "AreaCount.h"
 // using namespace wendouzi;
 
 int main(int argc, char * argv[])
@@ -25,10 +25,37 @@ int main(int argc, char * argv[])
 
     wendouzi::Image_f refImg;
     wendouzi::Algo::radio_to_reflectance(radioImg, refImg, _E0);
+    wendouzi::IO::RasterWrite(refImg, st.destdir, "ref.tiff");
 
-    wendouzi::Image_f density;
-    wendouzi::Algo::cal_density(refImg, density);
+    wendouzi::Image_b maskImg;
+    wendouzi::Algo::cal_Mask(refImg, maskImg);
+    wendouzi::IO::RasterWrite(maskImg, st.destdir, "mask.tiff");
 
-    wendouzi::IO::RasterWrite(density, st.destdir);
+    wendouzi::Image_f ktImg;
+    wendouzi::Algo::cal_KT(refImg, ktImg);
 
+    wendouzi::Image_f sviImg;
+    wendouzi::Algo::cal_SVI(refImg, sviImg);
+
+    wendouzi::Image_f ndviImg;
+    wendouzi::Algo::cal_NDVI(refImg, ndviImg);
+
+    wendouzi::Image_f distanceImg;
+    wendouzi::Algo::cal_distance(refImg, distanceImg, maskImg, true, DIST_FILLVALUE);
+
+    wendouzi::Image_f densityImg;
+    // cal_density(const Image_f & src, Image_f & result, const Image_b & mask, const Image_f & distance, const Image_f & ndvi, const Image_f & kt);
+    // wendouzi::Algo::cal_density(refImg, densityImg, maskImg, distanceImg, ndviImg, ktImg);
+    wendouzi::Algo::cal_density(refImg, densityImg, maskImg, distanceImg, sviImg);
+    wendouzi::IO::RasterWrite(densityImg, st.destdir, "density.tiff");
+
+    wendouzi::Image_int level;
+    // static bool cal_level(const Image_f & density, Image_int & result, const Image_b & mask, int levelNum = 4, float minvalue = DENSITY_MINI, float maxvalue = DENSITY_MAXI, int fillvalue = LEVEL_FILLVALUE);
+    wendouzi::Algo::cal_level(densityImg, level, maskImg);
+    wendouzi::IO::RasterWrite(level, st.destdir, "level.tiff");
+
+    wendouzi::AreaCount count;
+    count.setPixSize(100.0f);
+    wendouzi::Algo::area_count(level, count, maskImg);
+    wendouzi::IO::Output(count, st.destdir, "areaCount.txt");
 }

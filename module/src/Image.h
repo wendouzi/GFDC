@@ -16,6 +16,7 @@ class _Image {
     typedef T* Band;
     typedef T  BandType;
     friend class Algo;
+    friend class IO;
 public:
     _Image(int w = 0, int h = 0, int b = 0): width(w), height(h), bandNum(b){
         NXLog("%s\n", __PRETTY_FUNCTION__);
@@ -53,6 +54,16 @@ public:
             bands.push_back(b);
         }
     }
+
+    void setGeoTransform(const std::vector<double> & g){
+        this->adfGeoTransform = g;
+    }
+
+    std::vector<double> getGeoTransform() const
+    {
+        return adfGeoTransform;
+    }
+
 
     void fillValue(BandType val)
     {
@@ -101,6 +112,7 @@ protected:
     int width;
     int height;
     int bandNum;
+    std::vector<double> adfGeoTransform;
 
 };
 

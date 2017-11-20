@@ -2,7 +2,7 @@
 #define ALGO_H
 
 #include "Image.h"
-
+#include "AreaCount.h"
 namespace wendouzi {
 
 
@@ -44,14 +44,26 @@ static bool cal_SVI(const Image_f & src, Image_f & result);
 // static bool cal_Shade(const Image_f & src, Image_f & result);
 
 #define FILLVALUE 1000
+#define DIST_FILLVALUE 1000
 #define NEAR_POINTS_NUM 300
 #define WATERVALUE   (-1)
 
-static bool cal_distance(const Image_f & src, Image_f & result, const  Image_b & mask, float fillvalue = FILLVALUE, DistAlgo dia = Water2Pixel);
+static bool cal_distance(const Image_f & src, Image_f & result, const  Image_b & mask, bool isAddMask = false,  float fillvalue = DIST_FILLVALUE, DistAlgo dia = Water2Pixel);
+
 static bool cal_density(const Image_f & src, Image_f & result, Method me = withDist);
 static bool cal_density(const Image_f & src, Image_f & result, const Image_f & distance);
+static bool cal_density(const Image_f & src, Image_f & result, const Image_b & mask, const Image_f & distance, const Image_f & svi);
+#define DENSITY_MINI   float(-2)
+#define DENSITY_MAXI   float(8)
+static bool cal_density(const Image_f & src, Image_f & result, const Image_b & mask, const Image_f & distance, const Image_f & ndvi, const Image_f & kt, 
+    float fillvalue = DENSITY_MINI, float minvalue = DENSITY_MINI, float maxvalue = DENSITY_MAXI);
 
-static bool cal_level(const Image_f & src, Image_int & result, const Image_b & mask);
+#define LEVEL_FILLVALUE int(-4)
+static bool cal_level(const Image_f & density, Image_int & result, const Image_b & mask, int levelNum = 4, float minvalue = DENSITY_MINI, float maxvalue = DENSITY_MAXI, int fillvalue = LEVEL_FILLVALUE);
+
+// static bool area_count(const Image_int & level, AreaCount & count, const Image_b & mask, int levelNum = 4, float minvalue = DENSITY_MINI, float maxvalue = DENSITY_MAXI, int fillvalue = LEVEL_FILLVALUE);
+static bool area_count(const Image_int & level, AreaCount & count, const Image_b & mask);
+
 };
 
 
