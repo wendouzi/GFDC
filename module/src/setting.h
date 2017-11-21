@@ -20,6 +20,7 @@ static void Usage(const char* pszErrorMsg = NULL)
     "Mandatory arguments to long options are mandatory for short options too.\n"
     "  -c, --config    [path]                          input the configure file in abosolute path, format in xml format, see the example.xml. all info could be writen in config.xml include the src file and the output dir\n"
     "  -r, --rect      [ [xmin, ymin, xmax, ymax] ]          input the crop area in the rectangle, this option save the calculation account greatly.\n"
+    "  -h, --shp      [ shape path ]          input the crop area in the rectangle, this option save the calculation account greatly.\n"
     "  -p, --product   [ [ndvi, ndwi, distance, density, risk] ]     input the products you desire, the flowing products are default as output: density.\n"
     "  -s,  --srcfile  [path]                           intput the src tiff file \n"
     "  -d,  --destdir  [dir]                            input the dest directory, where productes will be saved.\n"

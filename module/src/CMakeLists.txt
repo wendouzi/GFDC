@@ -7,3 +7,7 @@
 set(SRC  main.cpp geoshape.cpp tinystr.cpp tinyxml.cpp tinyxmlerror.cpp tinyxmlparser.cpp io.cpp Algo.cpp )
 add_executable(cmdDC ${SRC})
 target_link_libraries(cmdDC ${THIRD_PARTY_LIB})
+
+set(TESTSRC  test.cpp)
+add_executable(cmdtest ${TESTSRC})
+target_link_libraries(cmdtest ${THIRD_PARTY_LIB})
