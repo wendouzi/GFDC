@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <config>
     <rect>[112.323, 28.414, 114.140, 29.857]</rect>
+    <shapefile>/home/yangxianping/data/testshp/yueyangshi.shp</shapefile>
     <product>[ndvi, ndwi, density]</product>
     <srcfile>/home/yangxianping/data/GF1_WFV1_E111.8_N29.7_20150521_L1A0000818473/test4.tiff</srcfile>
     <destdir>/home/yangxianping/data/result</destdir>

@@ -135,7 +135,7 @@ bool Algo::cal_WI(const Image_f & src, Image_b & result, float threshold)
     }
     for(int i = 0; i < _width * _height; i++)
     {
-        if(ndviband[i]> threshold){
+        if(ndviband[i] < threshold){
             wiband[i] = true;
         }
         else{
@@ -198,11 +198,14 @@ bool Algo::cal_Mask(const Image_f & src, Image_b & result)
 
     for(int i = 0; i < width * height; i++)
     {
-            float ratio = band4[i]/band3[i];
-            if(ratio > RATIO43_WATERINDEX || band3[i] < 0 || band4[i] < 0)
+            // float ratio = band4[i]/band3[i];
+            // if(ratio > RATIO43_WATERINDEX || band3[i] < 0 || band4[i] < 0)
+            if(band3[i] < 0 || band4[i] < 0) {
                 maskband[i] = false;
-            else
+            }
+            else{
                 maskband[i] = true;
+            }
     }
     return true;
 }
@@ -241,10 +244,8 @@ bool Algo::cal_distance(const Image_f & src, Image_f & result, const  Image_b & 
         for (int col = 1; col < width - 1; col++)
         {
             int idx = row * width + col;
-            if (!maskband[idx]){
-                distance[idx] = fillvalue;
-                continue;
-            }
+            distance[idx] = fillvalue;
+            
             // if not water, set the dist as FILLVALUE and continue
             if(!wi[idx])
             {
@@ -370,7 +371,25 @@ bool Algo::cal_distance(const Image_f & src, Image_f & result, const  Image_b & 
     NXLog("%s, GFimg::getDistance2water():distance calculate  success.\n", __PRETTY_FUNCTION__);
 
     // set the far pixel as the FILLVALUE the keep the influence range is circle
-    if (isAddMask) {
+    // if (isAddMask) {
+    //     for ( int row = 0; row < height; row++)
+    //     {
+    //         for ( int col = 0; col < width; col++)
+    //         {
+    //             int idx = row * width + col;
+    //             if(wi[idx]) {
+    //                 distance[idx] = WATERVALUE;
+    //                 maskband[idx] = false;
+    //             }
+    //             if(distance[idx] > NEAR_POINTS_NUM)
+    //             {
+    //                 distance[idx] = fillvalue;
+    //                 maskband[idx] = false;
+    //             }
+    //         } 
+    //     }
+    // }
+    // else {
         for ( int row = 0; row < height; row++)
         {
             for ( int col = 0; col < width; col++)
@@ -378,32 +397,17 @@ bool Algo::cal_distance(const Image_f & src, Image_f & result, const  Image_b & 
                 int idx = row * width + col;
                 if(wi[idx]) {
                     distance[idx] = WATERVALUE;
-                    maskband[idx] = false;
-                }
-                if(distance[idx] > NEAR_POINTS_NUM)
-                {
-                    distance[idx] = fillvalue;
-                    maskband[idx] = false;
-                }
-            } 
-        }
-    }
-    else {
-        for ( int row = 0; row < height; row++)
-        {
-            for ( int col = 0; col < width; col++)
-            {
-                int idx = row * width + col;
-                if(wi[idx]) {
-                    distance[idx] = WATERVALUE;
                 }
                 if(distance[idx] > NEAR_POINTS_NUM)
                 {
                     distance[idx] = fillvalue;
                 }
+                else if (distance[idx] <= 0){
+                    distance[idx] = 0;
+                }
             } 
         }
-    }
+    // }
 
     
     return true;
@@ -527,25 +531,39 @@ bool Algo::cal_level(const Image_f & src, Image_int & result, const Image_b & ma
         return false;
     }
 
-    for (int i = 0; i < _width * _height; i++){
-        levelband[i] = (int)std::round(densband[i]);
-    }
+    // for (int i = 0; i < _width * _height; i++){
+    //     levelband[i] = (int)std::round(densband[i]);
+    // }
     
-    int interval = 1;
-    int minvalue_int = std::round(minvalue);
-    int maxvalue_int = std::round(maxvalue);
-    interval = (maxvalue_int - minvalue_int) / levelNum;
-    NXLog("\n interval:%d, minvalue_int:%d, maxvalue_int :%d, levelNum:%d \n", interval, minvalue_int, maxvalue_int, levelNum);
+    // int interval = 1;
+    // int minvalue_int = std::round(minvalue);
+    // int maxvalue_int = std::round(maxvalue);
+    // interval = (maxvalue_int - minvalue_int) / levelNum;
+    // NXLog("\n interval:%d, minvalue_int:%d, maxvalue_int :%d, levelNum:%d \n", interval, minvalue_int, maxvalue_int, levelNum);
+    // for (int i = 0; i < _width * _height; i++){
+    //     int val= std::round(densband[i]);
+    //     if (val < minvalue_int) {
+    //         val = minvalue_int;
+    //     }else if (val > maxvalue_int) {
+    //         val = maxvalue_int;
+    //     }
+    //     val = val / interval;
+    //     val = val * interval;
+    //     levelband[i] = val;  
+    // }
+
+    float interval = (maxvalue - minvalue ) / levelNum;
+    NXLog("\n interval:%f, minvalue:%f, maxvalue :%f, levelNum:%d \n", interval, minvalue, maxvalue, levelNum);
     for (int i = 0; i < _width * _height; i++){
-        int val= std::round(densband[i]);
-        if (val < minvalue_int) {
-            val = minvalue_int;
-        }else if (val > maxvalue_int) {
-            val = maxvalue_int;
+        float temp = densband[i];
+        if (temp < minvalue) {
+            temp = minvalue;
         }
-        val = val / interval;
-        // val = val * interval;
-        levelband[i] = val;  
+        else if (temp > maxvalue) {
+            temp = maxvalue;
+        }
+        float val= temp / interval;
+        levelband[i] = std::floor(val);
     }
 
     bool *  maskband = mask.getBandPtr(0);
