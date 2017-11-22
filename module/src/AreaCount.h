@@ -8,7 +8,7 @@ class AreaCount {
     friend class IO;
 public:
     std::map<int, int> result;
-    float pixelArea = 100.0f;
+    float pixelArea = 16.0f * 16.0f;
     void setPixSize(float ar)
     {
         pixelArea = ar;

@@ -102,6 +102,7 @@ public:
                     float tempfloat[4] = {0.0f};
                     memset(tempfloat, 0, sizeof(float) * 4);
                     sscanf(temp.c_str(), "[%f, %f, %f, %f]", &tempfloat[0], &tempfloat[1], &tempfloat[2], &tempfloat[3]);
+                    NXLog("rect:%f, %f, %f, %f\n", tempfloat[0], tempfloat[1], tempfloat[2], tempfloat[3]);                    
                     int tempidx = 0;
                     for_each(m_range.begin(), m_range.end(), [&tempfloat, &tempidx](float & r){ r = tempfloat[tempidx++];});
                 }
@@ -144,11 +145,10 @@ public:
                     }
                     destdir = temp;
                 }
-                continue;
 
                 // shapefile
                 TiXmlNode * sh = root->FirstChild("shapefile");
-                if (s != NULL) {
+                if (sh != NULL) {
                     temp = std::string((char *)sh->ToElement()->GetText());
                     if (boost::filesystem::exists(temp)) {
                         shapefile = temp;
@@ -235,6 +235,7 @@ public:
                 Usage("please input the right 4 number of rect!\n");
             }
         }
+        NXLog("%s, shape file :%s\n", __PRETTY_FUNCTION__, shapefile.c_str());
 
     }
 

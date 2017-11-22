@@ -18,12 +18,10 @@ int main(int argc, char * argv[])
     std::string srcfile = st.srcfile;
     boost::filesystem::path savedir(st.destdir);
 
-
     if (!st.shapefile.empty()) {
         boost::filesystem::path tempfile = savedir;
         tempfile /= boost::filesystem::path(st.srcfile).stem();
-        tempfile /= "_shp_cut";
-        tempfile /= ".tiff";
+        tempfile = boost::filesystem::path(tempfile.string() + "_shp_cut.tiff");
         std::string cmd = "";
 #if defined(WIN32) || defined(_WIN32) || defined(_WINDOWS)
         cmd += "gdalwarp ";
@@ -33,20 +31,20 @@ int main(int argc, char * argv[])
         cmd += " -cutline ";
         cmd += st.shapefile;
         cmd += " -crop_to_cutline ";
-        cmd += " -of GTiff -dstalpha ";
+        cmd += " -of GTiff ";
         cmd += srcfile;
         cmd += " ";
         cmd += tempfile.string();
         system(cmd.c_str());
         fflush(stdout);
         srcfile = tempfile.string();
+        NXLog("shapefile cutline:%s\n", cmd.c_str());
     }
 
     if (st.m_range.size() == 4) {
         boost::filesystem::path tempfile = savedir;
         tempfile /= boost::filesystem::path(srcfile).stem();
-        tempfile /= "_rect_cut";
-        tempfile /= ".tiff";
+        tempfile = boost::filesystem::path(tempfile.string() + "_rect_cut.tiff");
         std::string cmd = "";
 #if defined(WIN32) || defined(_WIN32) || defined(_WINDOWS)
         cmd += "gdalwarp ";
@@ -55,16 +53,18 @@ int main(int argc, char * argv[])
 #endif
         cmd += " -te ";
         for (int idx = 0; idx < 4; ++idx) {
-            cmd += std::to_string(st.m_range[0]);
+            cmd += std::to_string(st.m_range[idx]);
             cmd += " ";
         }
-        cmd += " -of GTiff -dstalpha ";
+        cmd += " -of GTiff ";
         cmd += srcfile;
         cmd += " ";
         cmd += tempfile.string();
         system(cmd.c_str());
         fflush(stdout);
-        srcfile = tempfile.string();        
+        srcfile = tempfile.string(); 
+        NXLog("range cut:%s\n", cmd.c_str());
+        
     }
 
     wendouzi::Image_u16 originImg ;
@@ -104,7 +104,7 @@ int main(int argc, char * argv[])
     if (st.m_products[int(wendouzi::setting::svi)]) {
         wendouzi::IO::RasterWrite(sviImg, st.destdir, "svi.tiff");
     }
-
+ 
     wendouzi::Image_f distanceImg;
     wendouzi::Algo::cal_distance(refImg, distanceImg, maskImg, false, DIST_FILLVALUE);
     if (st.m_products[int(wendouzi::setting::distance)]) {
@@ -135,7 +135,7 @@ int main(int argc, char * argv[])
     }
 
     wendouzi::AreaCount count;
-    count.setPixSize(100.0f);
+    count.setPixSize(16* 16.0f);
     wendouzi::Algo::area_count(level, count, maskImg);
     wendouzi::IO::Output(count, st.destdir, "areaCount.txt");
 }

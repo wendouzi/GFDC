@@ -85,8 +85,25 @@ bool Algo::cal_NDVI(const Image_f & src, Image_f & result)
 
 bool Algo::cal_NDWI(const Image_f & src, Image_f & result)
 {
-    assert(false);
-    return false;
+    NXLog("%s\n", __PRETTY_FUNCTION__);
+    result.init(src.width, src.height, src.bandNum);
+    result.setGeoTransform(src.getGeoTransform());
+    
+    int _width = src.width;
+    int _height = src.height;
+    float * band2 = src.getBandPtr(1);
+    float * band4 = src.getBandPtr(3);
+    float * ndwiband = result.getBandPtr(0);
+    if (band2 == NULL | band4 == NULL || ndwiband == NULL) {
+        NXLog("%s cal_ndwi error\n", __PRETTY_FUNCTION__);
+        return false;
+    }
+
+    for(int i = 0; i < _width * _height; i++)
+    {
+        ndwiband[i] = (band2[i] - band4[i])/(band2[i] + band4[i]);
+    }
+    return true;
 }
 
 bool Algo::cal_SVI(const Image_f & src, Image_f & result)
