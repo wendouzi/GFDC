@@ -19,8 +19,8 @@ static void Usage(const char* pszErrorMsg = NULL)
     NXLog("Usage: \n  cmdGF.exe [OPTION]... [Source FILE]\n"
     "Mandatory arguments to long options are mandatory for short options too.\n"
     "  -c, --config    [path]                          input the configure file in abosolute path, format in xml format, see the example.xml. all info could be writen in config.xml include the src file and the output dir\n"
+    "  -sh, --shp      [ shape path ]              input the crop area in the rectangle, this option save the calculation account greatly. shapefile cut is early than rect\n"
     "  -r, --rect      [ [xmin, ymin, xmax, ymax] ]          input the crop area in the rectangle, this option save the calculation account greatly.\n"
-    "  -h, --shp      [ shape path ]          input the crop area in the rectangle, this option save the calculation account greatly.\n"
     "  -p, --product   [ [ndvi, ndwi, distance, density, risk] ]     input the products you desire, the flowing products are default as output: density.\n"
     "  -s,  --srcfile  [path]                           intput the src tiff file \n"
     "  -d,  --destdir  [dir]                            input the dest directory, where productes will be saved.\n"
@@ -47,6 +47,7 @@ public:
         distance,
         kt,
         density,
+        level,
         risk,
         productTotalNum
     };
@@ -58,6 +59,7 @@ public:
         "distance",
         "kt",
         "density",
+        "level",
         "risk"
     };
     std::vector<float> m_range;
@@ -65,7 +67,7 @@ public:
 
     std::string srcfile;
     std::string destdir;
-    std::string shpfile;
+    std::string shapefile;
     __setting(){
         NXLog("%s\n", __PRETTY_FUNCTION__);
         // for_each(range.begin(), range.end(), [](float & r){ r = 0;});
@@ -74,7 +76,7 @@ public:
         m_products.assign(int(productTotalNum), false);
         srcfile = "";
         destdir = "";
-        shpfile = "";
+        shapefile = "";
     }
 
     void config(int argc, char* argv[]){
@@ -143,6 +145,19 @@ public:
                     destdir = temp;
                 }
                 continue;
+
+                // shapefile
+                TiXmlNode * sh = root->FirstChild("shapefile");
+                if (s != NULL) {
+                    temp = std::string((char *)sh->ToElement()->GetText());
+                    if (boost::filesystem::exists(temp)) {
+                        shapefile = temp;
+                    }
+                    else {
+                        Usage("shapefile (input shapefile file ) is not exists.\n");
+                    }
+                }
+                continue;
             }
             else if (EQUAL(argv[idx], "-r") || EQUAL(argv[idx], "--rect"))
             {
@@ -189,9 +204,18 @@ public:
                 }
                 continue;          
             }
+            else if (EQUAL(argv[idx], "-sh") || EQUAL(argv[idx], "--shapefile"))
+            {
+                std::string shfile = std::string(argv[++idx]);
+                if (!boost::filesystem::exists(shfile)) {
+                    Usage("input shape (shape file ) is not exists.\n");
+                }
+                shapefile = shfile;
+                continue;
+            }
             else {
                 // do nothing;
-            }      
+            }
         }
         
     }
@@ -202,6 +226,16 @@ public:
         }
         NXLog("%s, save dir:%s\n", __PRETTY_FUNCTION__, destdir.c_str());
 
+        if (m_range.size() != 0) {
+            if (m_range.size() != 4) {
+                Usage("please input the 4 number of rect!\n");
+            }
+            if (m_range[3] < m_range[1] || m_range[2] < m_range[1])
+            {
+                Usage("please input the right 4 number of rect!\n");
+            }
+        }
+
     }
 
     void clear() {
@@ -211,7 +245,7 @@ public:
         m_products.assign(int(productTotalNum), false);
         srcfile = "";
         destdir = "";
-        shpfile = "";
+        shapefile = "";
     }
     virtual ~__setting(){
        NXLog("%s\n", __PRETTY_FUNCTION__);

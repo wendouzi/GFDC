@@ -3,7 +3,7 @@
 //./gdalwarp -te 112.60 29.221 113.10 29.857 
 // /home/yangxianping/data/GF1_WFV1_E111.8_N29.7_20150521_L1A0000818473/GF1_WFV1_E111.8_N29.7_20150521_L1A0000818473.tiff 
 // /home/yangxianping/data/GF1_WFV1_E111.8_N29.7_20150521_L1A0000818473/test4.tiff
-int main() 
+int main()
 {
     std::string cmd;
     cmd = "gdalwarp";
