@@ -119,7 +119,7 @@ int main(int argc, char * argv[])
     wendouzi::Image_f densityImg;
     // cal_density(const Image_f & src, Image_f & result, const Image_b & mask, const Image_f & distance, const Image_f & ndvi, const Image_f & kt);
     // wendouzi::Algo::cal_density(refImg, densityImg, maskImg, distanceImg, ndviImg, ktImg);
-    wendouzi::Algo::cal_density(refImg, densityImg, maskImg, distanceImg, sviImg);
+    wendouzi::Algo::cal_density(refImg, densityImg, maskImg, distanceImg, sviImg, -1.0f);
     if (st.m_products[int(wendouzi::setting::density)]) {
         wendouzi::IO::RasterWrite(densityImg, st.destdir, "density.tiff");
     }

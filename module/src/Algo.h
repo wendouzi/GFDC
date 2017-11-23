@@ -52,7 +52,7 @@ static bool cal_distance(const Image_f & src, Image_f & result, const  Image_b &
 
 static bool cal_density(const Image_f & src, Image_f & result, Method me = withDist);
 static bool cal_density(const Image_f & src, Image_f & result, const Image_f & distance);
-static bool cal_density(const Image_f & src, Image_f & result, const Image_b & mask, const Image_f & distance, const Image_f & svi);
+static bool cal_density(const Image_f & src, Image_f & result, const Image_b & mask, const Image_f & distance, const Image_f & svi, float fillvalue = -1.0f);
 #define DENSITY_MINI   float(-2)
 #define DENSITY_MAXI   float(8)
 static bool cal_density(const Image_f & src, Image_f & result, const Image_b & mask, const Image_f & distance, const Image_f & ndvi, const Image_f & kt, 

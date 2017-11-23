@@ -459,7 +459,7 @@ bool Algo::cal_density(const Image_f & src, Image_f & result, Method me)
 }
 
 
-bool Algo::cal_density(const Image_f & src, Image_f & result, const Image_b & mask, const Image_f & distance, const Image_f & svi)
+bool Algo::cal_density(const Image_f & src, Image_f & result, const Image_b & mask, const Image_f & distance, const Image_f & svi, float fillvalue)
 {
     NXLog("%s\n", __PRETTY_FUNCTION__);
     
@@ -468,6 +468,7 @@ bool Algo::cal_density(const Image_f & src, Image_f & result, const Image_b & ma
     float * sviband = svi.getBandPtr(0);
     float * distband = distance.getBandPtr(0);
     float * densband = result.getBandPtr(0);
+    bool * maskband = mask.getBandPtr(0);
     if (sviband == NULL || distband == NULL || densband == NULL) {
         NXLog("%s cal_density error\n", __PRETTY_FUNCTION__);
         return false;
@@ -486,6 +487,16 @@ bool Algo::cal_density(const Image_f & src, Image_f & result, const Image_b & ma
         }
         densband[i] = temp;
     }
+
+    for ( int i = 0; i < _width * _height ; i++)
+    {
+        if (!maskband[i] )
+        {
+            densband[i] = fillvalue;
+            continue;
+        }
+    }
+    return true;
 
 }
 
