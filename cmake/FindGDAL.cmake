@@ -9,8 +9,8 @@ if(EXISTS ${GDAL_ROOT})
     message("use gdal")
 
     if(UNIX)
-        set(GDAL_INCLUDE_DIR  ${GDAL_ROOT}/linux64/include)
-        set(GDAL_LIBRARIES    ${GDAL_ROOT}/linux64/lib/libgdal.so
+        set(GDAL_INCLUDE_DIR  ${GDAL_ROOT}/linux/include)
+        set(GDAL_LIBRARIES    ${GDAL_ROOT}/linux/lib/libgdal.so
                             #  /usr/lib64/libhdf5.so
                             #  /usr/lib64/hdf/libmfhdf.a
             )
