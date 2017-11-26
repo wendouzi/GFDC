@@ -28,6 +28,14 @@ int main(int argc, char * argv[])
 #else 
         cmd += "./gdalwarp ";
 #endif
+        boost::filesystem::path projfile = boost::filesystem::path(st.shapefile).parent_path();
+        projfile /= boost::filesystem::path(st.shapefile).stem();
+        projfile = boost::filesystem::path(projfile.string() + ".prj");
+        NXLog("projfile :%s\n", projfile.c_str());
+        if (boost::filesystem::exists(projfile)) {
+            cmd += " -t_srs ";
+            cmd += projfile.string();
+        }
         cmd += " -cutline ";
         cmd += st.shapefile;
         cmd += " -crop_to_cutline ";
@@ -35,10 +43,10 @@ int main(int argc, char * argv[])
         cmd += srcfile;
         cmd += " ";
         cmd += tempfile.string();
+        NXLog("shapefile cutline:%s\n", cmd.c_str());
         system(cmd.c_str());
         fflush(stdout);
         srcfile = tempfile.string();
-        NXLog("shapefile cutline:%s\n", cmd.c_str());
     }
 
     if (st.m_range.size() == 4) {

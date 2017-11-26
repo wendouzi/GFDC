@@ -18,7 +18,8 @@ bool IO::RasterRead(const std::string& filename, Image_u16 * img)
             NXLog("File to open file: %s\n", filename.c_str());
             return false;
     }
-    
+    img->proj = std::string(pDataset->GetProjectionRef());
+    NXLog("%s, image proj:%s\n", __PRETTY_FUNCTION__, img->proj.c_str());
     double adfGeoTransform[6];
     pDataset->GetGeoTransform(adfGeoTransform);
     std::vector<double> adf(std::begin(adfGeoTransform), std::end(adfGeoTransform));
@@ -59,6 +60,7 @@ bool IO::RasterWrite(const Image_f & src, const std::string & dir, const std::st
         NXLog("GTiff is not supported.\n");
         return false;
     }
+
     char **papszOptions = NULL;
     NXLog("write width:%d, height:%d",src.width, src.height);
     GDALDataset *WriteDataSet = poDriver->Create(spath.string().c_str(), src.width,  src.height,1,GDT_Float32, papszOptions);
@@ -69,6 +71,7 @@ bool IO::RasterWrite(const Image_f & src, const std::string & dir, const std::st
     }
     //! TO DO add geo transform
     WriteDataSet->SetGeoTransform(adfGeoTransform);
+    WriteDataSet->SetProjection(src.proj.c_str());
     int poBandMap[1] ={1};
     if(WriteDataSet->RasterIO(GF_Write,0,0,src.width,src.height,src.getBandPtr(0),src.width,src.height,GDT_Float32,1,poBandMap,0,0,0) != CE_None)
     {
@@ -110,6 +113,8 @@ bool IO::RasterWrite(const Image_int & src, const std::string & dir, const std::
     }
     //! TO DO add geo transform
     WriteDataSet->SetGeoTransform(adfGeoTransform);
+    WriteDataSet->SetProjection(src.proj.c_str());
+
     int poBandMap[1] ={1};
     if(WriteDataSet->RasterIO(GF_Write,0,0,src.width,src.height,src.getBandPtr(0),src.width,src.height,GDT_Int32,1,poBandMap,0,0,0) != CE_None)
     {
@@ -151,6 +156,8 @@ bool IO::RasterWrite(const Image_b & src, const std::string & dir, const std::st
     }
     //! TO DO add geo transform
     WriteDataSet->SetGeoTransform(adfGeoTransform);
+    WriteDataSet->SetProjection(src.proj.c_str());
+    
     int poBandMap[1] ={1};
     if(WriteDataSet->RasterIO(GF_Write,0,0,src.width,src.height,src.getBandPtr(0),src.width,src.height,GDT_Byte,1,poBandMap,0,0,0) != CE_None)
     {

@@ -17,6 +17,7 @@ bool Algo::correct_radio(const Image_u16 & src, Image_f & result, std::vector<fl
 
     result.init(src.width, src.height, src.bandNum);
     result.setGeoTransform(src.getGeoTransform());
+    result.setProjectionRef(src.getProjectionRef());
     for(int idx = 0; idx < src.bandNum; ++idx){
         float _scale = d_scale[idx];
         float _offset = d_offset[idx];
@@ -43,6 +44,7 @@ bool Algo::radio_to_reflectance(const Image_f & src, Image_f & result, std::vect
     }
     result.init(src.width, src.height, src.bandNum);
     result.setGeoTransform(src.getGeoTransform());
+    result.setProjectionRef(src.getProjectionRef());
     
     for(int idx = 0; idx < src.bandNum; ++idx) {
         float _E0 = E0[idx];
@@ -63,6 +65,7 @@ bool Algo::cal_NDVI(const Image_f & src, Image_f & result)
     NXLog("%s\n", __PRETTY_FUNCTION__);
     result.init(src.width, src.height, src.bandNum);
     result.setGeoTransform(src.getGeoTransform());
+    result.setProjectionRef(src.getProjectionRef());
     
     int _width = src.width;
     int _height = src.height;
@@ -88,6 +91,7 @@ bool Algo::cal_NDWI(const Image_f & src, Image_f & result)
     NXLog("%s\n", __PRETTY_FUNCTION__);
     result.init(src.width, src.height, src.bandNum);
     result.setGeoTransform(src.getGeoTransform());
+    result.setProjectionRef(src.getProjectionRef());
     
     int _width = src.width;
     int _height = src.height;
@@ -111,6 +115,7 @@ bool Algo::cal_SVI(const Image_f & src, Image_f & result)
     NXLog("%s\n", __PRETTY_FUNCTION__);
     result.init(src.width, src.height, src.bandNum);
     result.setGeoTransform(src.getGeoTransform());
+    result.setProjectionRef(src.getProjectionRef());
     
     Image_f ndvi;
     cal_NDVI(src, ndvi);
@@ -139,6 +144,7 @@ bool Algo::cal_WI(const Image_f & src, Image_b & result, float threshold)
     NXLog("%s\n", __PRETTY_FUNCTION__);
     result.init(src.width, src.height, src.bandNum);
     result.setGeoTransform(src.getGeoTransform());
+    result.setProjectionRef(src.getProjectionRef());
     
     Image_f ndvi;
     cal_NDVI(src, ndvi);
@@ -200,6 +206,7 @@ bool Algo::cal_Mask(const Image_f & src, Image_b & result)
     }
     result.init(src.width, src.height, src.bandNum);
     result.setGeoTransform(src.getGeoTransform());
+    result.setProjectionRef(src.getProjectionRef());
 
     result.fillValue(false);
     int width = src.width;
@@ -238,6 +245,7 @@ bool Algo::cal_distance(const Image_f & src, Image_f & result, const  Image_b & 
     NXLog("%s\n", __PRETTY_FUNCTION__);
     result.init(src.width, src.height, src.bandNum);
     result.setGeoTransform(src.getGeoTransform());
+    result.setProjectionRef(src.getProjectionRef());
     
     Image_b wiImage;
     if (!cal_WI(src, wiImage)) {
@@ -465,6 +473,8 @@ bool Algo::cal_density(const Image_f & src, Image_f & result, const Image_b & ma
     
     result.init(src.width, src.height, src.bandNum);
     result.setGeoTransform(src.getGeoTransform());
+    result.setProjectionRef(src.getProjectionRef());
+
     float * sviband = svi.getBandPtr(0);
     float * distband = distance.getBandPtr(0);
     float * densband = result.getBandPtr(0);
@@ -505,6 +515,8 @@ bool Algo::cal_density(const Image_f & src, Image_f & result, const Image_b & ma
     NXLog("%s\n", __PRETTY_FUNCTION__);
     result.init(src.width, src.height, src.bandNum);
     result.setGeoTransform(src.getGeoTransform());
+    result.setProjectionRef(src.getProjectionRef());
+    
     float * ndviband = ndvi.getBandPtr(0);
     float * nirband = src.getBandPtr(3);
     float * distband = distance.getBandPtr(0);
@@ -548,6 +560,7 @@ bool Algo::cal_level(const Image_f & src, Image_int & result, const Image_b & ma
     NXLog("%s\n", __PRETTY_FUNCTION__);
     result.init(src.width, src.height, src.bandNum);
     result.setGeoTransform(src.getGeoTransform());
+    result.setProjectionRef(src.getProjectionRef());
     
     int _width = src.width;
     int _height = src.height;

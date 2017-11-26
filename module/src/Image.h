@@ -63,7 +63,16 @@ public:
     {
         return adfGeoTransform;
     }
+    
+    void setProjectionRef(const std::string & ref)
+    {
+        this->proj = ref;
+    }
 
+    std::string getProjectionRef() const
+    {
+        return this->proj;
+    }
 
     void fillValue(BandType val)
     {
@@ -113,7 +122,7 @@ protected:
     int height;
     int bandNum;
     std::vector<double> adfGeoTransform;
-
+    std::string proj;
 };
 
 typedef _Image<float> Image_f;
