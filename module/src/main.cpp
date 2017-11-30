@@ -24,7 +24,7 @@ int main(int argc, char * argv[])
         tempfile = boost::filesystem::path(tempfile.string() + "_shp_cut.tiff");
         std::string cmd = "";
 #if defined(WIN32) || defined(_WIN32) || defined(_WINDOWS)
-        cmd += "gdalwarp ";
+        cmd += ".\gdalwarp ";
 #else 
         cmd += "./gdalwarp ";
 #endif
@@ -55,7 +55,7 @@ int main(int argc, char * argv[])
         tempfile = boost::filesystem::path(tempfile.string() + "_rect_cut.tiff");
         std::string cmd = "";
 #if defined(WIN32) || defined(_WIN32) || defined(_WINDOWS)
-        cmd += "gdalwarp ";
+        cmd += ".\gdalwarp ";
 #else 
         cmd += "./gdalwarp ";
 #endif
