@@ -3,6 +3,8 @@
 
 #include "Image.h"
 #include "AreaCount.h"
+#include "CCBaseTypeDefine.h"
+
 namespace wendouzi {
 
 

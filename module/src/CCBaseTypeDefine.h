@@ -55,12 +55,7 @@ const AppId InvalidAppId = 0xffffffff;
 #define FILE_SEPERATOR "/"
 #endif
 
-#ifndef EQUAL
-#if defined(WIN32) || defined(_WIN32) || defined(_WINDOWS)
-#  define EQUALN(a,b,n)           (strnicmp(a,b,n)==0)
-#  define EQUAL(a,b)              (stricmp(a,b)==0)
-#else
-#  define EQUALN(a,b,n)           (strncasecmp(a,b,n)==0)
-#  define EQUAL(a,b)              (strcasecmp(a,b)==0)
+#ifdef WIN32
+#define __PRETTY_FUNCTION__ ""
 #endif
-#endif
+

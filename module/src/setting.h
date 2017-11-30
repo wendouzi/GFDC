@@ -14,6 +14,10 @@
 
 namespace wendouzi {
 
+#if defined(WIN32) || defined(_WIN32) || defined(_WINDOWS)
+#define EQUAL(a, b) (strcmp(a, b) ==  0)
+#endif
+
 static void Usage(const char* pszErrorMsg = NULL)
 {
     NXLog("Usage: \n  cmdGF.exe [OPTION]... [Source FILE]\n"
@@ -51,17 +55,8 @@ public:
         risk,
         productTotalNum
     };
+    std::vector<std::string> productNames;
 
-    std::vector<std::string> productNames = {
-        "ndvi",
-        "ndwi",
-        "svi",
-        "distance",
-        "kt",
-        "density",
-        "level",
-        "risk"
-    };
     std::vector<float> m_range;
     std::vector<bool> m_products;
 
@@ -72,6 +67,14 @@ public:
         NXLog("%s\n", __PRETTY_FUNCTION__);
         // for_each(range.begin(), range.end(), [](float & r){ r = 0;});
         // for_each(products.begin(), products.end(), [](bool & p) { p = false;}); // error cause by return type bool &
+        productNames.push_back(std::string("ndvi"));
+        productNames.push_back(std::string("ndwi"));
+        productNames.push_back(std::string("svi"));
+        productNames.push_back(std::string("distance"));
+        productNames.push_back(std::string("kt"));
+        productNames.push_back(std::string("density"));
+        productNames.push_back(std::string("level"));
+        productNames.push_back(std::string("risk"));
         m_range.assign(int(rangeTotalNum), 0);
         m_products.assign(int(productTotalNum), false);
         srcfile = "";

@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include "NXLog.h"
 #include <assert.h>
+#include "CCBaseTypeDefine.h"
 
 namespace wendouzi{
 class Algo;
